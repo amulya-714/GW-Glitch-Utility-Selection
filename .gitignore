@@ -25,7 +25,7 @@ backup_before_*/
 !.env.example
 
 # Local datasets and generated data
-data/
+/data/
 
 # Duplicate project snapshots
 new_version/
