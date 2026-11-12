@@ -1,0 +1,61 @@
+{
+  "ifo": "H1",
+  "run": "O2",
+  "image_size_wh": [
+    800,
+    600
+  ],
+  "box_ltrb": [
+    101,
+    61,
+    674,
+    540
+  ],
+  "region_wh": [
+    573,
+    479
+  ],
+  "sizes_hw": [
+    [
+      128,
+      153
+    ],
+    [
+      96,
+      115
+    ],
+    [
+      160,
+      191
+    ],
+    [
+      224,
+      268
+    ]
+  ],
+  "aspect_preserving": true,
+  "stretch_by_size": {
+    "128x153": 0.00078,
+    "96x115": 0.0014,
+    "160x191": 0.00208,
+    "224x268": 0.00016
+  },
+  "alpha_background": "white",
+  "resize_mode": "bilinear",
+  "events": [
+    "QrWtga37vp",
+    "9Yll9UYKjk",
+    "QDm6C7WDhC",
+    "mihGiYtiir",
+    "s06pmCqP4z",
+    "DV8DuPvkJg"
+  ],
+  "sheets": [
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/preprocessing_preview/H1_O2/preview_QrWtga37vp.png",
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/preprocessing_preview/H1_O2/preview_9Yll9UYKjk.png",
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/preprocessing_preview/H1_O2/preview_QDm6C7WDhC.png",
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/preprocessing_preview/H1_O2/preview_mihGiYtiir.png",
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/preprocessing_preview/H1_O2/preview_s06pmCqP4z.png",
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/preprocessing_preview/H1_O2/preview_DV8DuPvkJg.png"
+  ]
+}

@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# Data and generated outputs
+data/raw/images/
+data/processed/
+experiments/runs/
+
+# Backups and temporary files
+*_backup/
+backup_before_*/
+*.bak
+*.zip
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Local datasets and generated data
+data/
+
+# Duplicate project snapshots
+new_version/
+new_version2/
+
+# Backup dependencies
+requirements_backup.txt
+
+# Training outputs
+experiments/

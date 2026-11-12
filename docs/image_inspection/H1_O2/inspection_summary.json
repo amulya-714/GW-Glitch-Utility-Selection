@@ -1,0 +1,51 @@
+{
+  "ifo": "H1",
+  "run": "O2",
+  "is_target_run": false,
+  "n_events": 24,
+  "labels": {
+    "1400Ripples": 2,
+    "1080Lines": 2,
+    "Low_Frequency_Burst": 1,
+    "Low_Frequency_Lines": 1,
+    "Power_Line": 1,
+    "Air_Compressor": 1,
+    "Chirp": 1,
+    "Scratchy": 1,
+    "Blip": 1,
+    "Repeating_Blips": 1,
+    "Whistle": 1,
+    "None_of_the_Above": 1,
+    "Koi_Fish": 1,
+    "Paired_Doves": 1,
+    "Scattered_Light": 1,
+    "No_Glitch": 1,
+    "Wandering_Line": 1,
+    "Light_Modulation": 1,
+    "Extremely_Loud": 1,
+    "Helix": 1,
+    "Violin_Mode": 1,
+    "Tomte": 1
+  },
+  "image_sizes_wh": [
+    "800x600"
+  ],
+  "image_modes": [
+    "RGBA"
+  ],
+  "bytes_min_max": [
+    94513,
+    350468
+  ],
+  "configured_image_size_hw": [
+    96,
+    96
+  ],
+  "configured_channels": 1,
+  "contact_sheets": [
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/image_inspection/H1_O2/contact_sheet_01.png",
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/image_inspection/H1_O2/contact_sheet_02.png",
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/image_inspection/H1_O2/contact_sheet_03.png",
+    "/Users/amulya/Projects/GW-Glitch-Utility-Selection/docs/image_inspection/H1_O2/contact_sheet_04.png"
+  ]
+}

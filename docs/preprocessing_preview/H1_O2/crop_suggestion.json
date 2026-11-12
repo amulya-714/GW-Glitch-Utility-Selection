@@ -1,0 +1,55 @@
+{
+  "ifo": "H1",
+  "run": "O2",
+  "n_events": 24,
+  "n_images": 96,
+  "image_size_wh": [
+    800,
+    600
+  ],
+  "suggested_box_ltrb": [
+    101,
+    61,
+    674,
+    540
+  ],
+  "per_view_boxes_ltrb": [
+    [
+      101,
+      61,
+      674,
+      540
+    ],
+    [
+      101,
+      61,
+      674,
+      540
+    ],
+    [
+      101,
+      61,
+      674,
+      540
+    ],
+    [
+      101,
+      61,
+      674,
+      540
+    ]
+  ],
+  "max_per_view_disagreement_px": 0,
+  "box_area_fraction": 0.5718,
+  "min_alpha": 255.0,
+  "max_fraction_non_opaque": 0.0,
+  "params": {
+    "rel_thresh": 0.3,
+    "density": 0.5,
+    "inset": 0,
+    "seed": 0
+  },
+  "warnings": [],
+  "config_snippet": "crop:\n  enabled: true\n  reference_size: [800, 600]\n  box: [101, 61, 674, 540]",
+  "status": "SUGGESTION ONLY: verify with `crop_preview preview` before use."
+}

@@ -1,0 +1,180 @@
+# Classifier config: source-run (O2) training only.
+# Every key can be overridden from the CLI:  --set train.lr=0.0005 --set split.mode=blocked
+#
+# PROTOCOL: O3a is the unseen target run. train.py refuses to read it (see
+# protocol.target_runs). It is only read by `evaluate.py --split target --final`.
+
+experiment:
+  name: null                  # null -> "{ifo}_{model.type}_seed{seed}"
+  seed: 42
+  output_dir: experiments/runs
+  device: auto                # auto | cpu | mps | cuda  (falls back to CPU safely)
+  debug: false                # set by --debug; the only mode in which a target cap is allowed
+
+protocol:
+  source_run: O2
+  target_runs: [O3a]          # training code raises TargetLeakageError for these
+
+paths:
+  metadata_dir: data/raw/metadata
+  image_dir: data/raw/images          # raw PNG cache (never re-downloaded)
+  processed_dir: data/processed       # preprocessed uint8 arrays (per split)
+
+data:
+  ifo: H1                     # H1 or L1: separate experiments (no detector ID is a model input)
+  view_columns: [url1, url2, url3, url4]
+  view_durations: [0.5, 1.0, 2.0, 4.0]    # seconds; ORDER MUST MATCH view_columns
+  # ---- preprocessing (see docs/preprocessing.md) -------------------------------------------------
+  # APPROVED INITIAL BASELINE (chosen from the real-image review of H1 O2 contact sheets).
+  # Pipeline: crop -> alpha composite -> resize (RGB) -> normalise. All four views are kept.
+  # Originals are 800x600 RGBA PNGs and are never modified.
+  #
+  # Output size: the 573x479 crop has aspect 1.196. 128 x 153 (HxW) preserves it to 0.08% (integer rounding).
+  # A square size would stretch it by ~16%, and is rejected by crop.max_aspect_distortion below.
+  image_size: [128, 153]      # [height, width]. Other aspect-preserving heights: 96->115, 160->191, 224->268 (width)
+  channels: 3                 # 1 = grayscale (luma), 3 = RGB (keeps colour-map information)
+  resize_mode: bilinear       # bilinear | area | bicubic | lanczos  (all antialiased when downscaling)
+  alpha_background: white     # white | black | drop. RGBA is composited over this colour (drop = ignore alpha)
+  crop:
+    enabled: true
+    reference_size: [800, 600]   # (width, height) the box coordinates refer to; other sizes are rejected
+    box: [101, 61, 674, 540]     # [left, top, right, bottom] in original pixels, right/bottom exclusive
+    # Largest tolerated anisotropic stretch of the crop (|x_scale / y_scale - 1|). A configuration that stretches
+    # the crop more than this fails at startup with the aspect-preserving alternatives. null disables the check.
+    max_aspect_distortion: 0.02
+  normalization:
+    # unit                   x/255. Fixed scale, keeps absolute and cross-view intensity (baseline).
+    # per_view_standardize   each view image alone -> mean 0 / std 1 (discards absolute and cross-view brightness)
+    # per_sample_standardize one mean/std per event over all four views jointly (keeps relative view brightness)
+    # fixed                  (x/255 - mean)/std with constants below; compute them on SOURCE TRAIN data only
+    mode: unit
+    mean: null                   # fixed only: scalar or one value per channel, in [0, 1] units
+    std: null
+  download:
+    workers: 8
+    timeout_s: 30
+    retries: 4
+    backoff_s: 1.5
+    min_bytes: 200            # smaller files are treated as corrupt
+
+# Explicit label space. Nothing is dropped silently: every excluded or unseen
+# label is logged with its event count and written to class_mapping.json.
+classes:
+  names:                      # labels present in O2 (22). Order defines class indices.
+    - 1080Lines
+    - 1400Ripples
+    - Air_Compressor
+    - Blip
+    - Chirp
+    - Extremely_Loud
+    - Helix
+    - Koi_Fish
+    - Light_Modulation
+    - Low_Frequency_Burst
+    - Low_Frequency_Lines
+    - No_Glitch
+    - None_of_the_Above
+    - Paired_Doves
+    - Power_Line
+    - Repeating_Blips
+    - Scattered_Light
+    - Scratchy
+    - Tomte
+    - Violin_Mode
+    - Wandering_Line
+    - Whistle
+  # Labels in `names` that are NOT trained on. None_of_the_Above is a catch-all
+  # that O3 removed from its scheme. Set to [] to train on it (DECISION FOR YOU).
+  exclude: [None_of_the_Above]
+  # Labels that exist in the target run but not in O2. Used only at final
+  # evaluation for open-set reporting. The classifier cannot predict them.
+  unseen_in_source: [Blip_Low_Frequency, Fast_Scattering]
+
+# ml_confidence filtering (null = keep everything). Applied AFTER the temporal
+# split, so the split boundary never depends on the threshold.
+confidence:
+  train: 0.7
+  val: 0.7
+
+split:
+  mode: chronological         # chronological | blocked
+  val_fraction: 0.2
+  gap_seconds: 21600          # events within this distance of the boundary are purged (6 h)
+  block_seconds: 86400        # blocked mode: block length (1 day)
+  min_val_per_class: 20       # warn when a class has fewer val events than this
+
+# Per-class caps keep 1080Lines (~31k in H1 O2) from dominating and bound the
+# download size. null = no cap. Caps are seeded and applied per split.
+sampling:
+  max_per_class_train: 3000
+  max_per_class_val: 1500
+
+imbalance:
+  weighting: effective_number # none | inverse_freq | effective_number
+  weight_power: 1.0           # inverse_freq: w ~ (1/n)^power
+  effective_number_beta: 0.999
+  max_weight: 20.0            # clip, avoids exploding weights on tiny classes
+  sampler: none               # none | sqrt | balanced  (use EITHER weighting OR sampler)
+
+loss:
+  name: ce                    # ce | focal
+  label_smoothing: 0.0
+  focal_gamma: 2.0
+  scale_consistency:
+    weight: 0.0               # source-training only; opt in after enabling scale interaction
+    confidence_threshold: 0.7
+    temperature: 1.0
+
+model:
+  type: multiview             # multiview | baseline_merged | baseline_single
+  base_channels: 32
+  num_stages: 4
+  embed_dim: 128
+  dropout: 0.3
+  # --- multiview only (each switch is an ablation) ---
+  film:
+    enabled: true             # false -> shared encoder with no time-scale conditioning
+    cond_dim: 64
+    mode: continuous          # continuous (MLP of log2 duration) | learned (per-view embedding)
+  fusion:
+    type: attention           # attention | concat | mean
+    num_heads: 4
+    num_layers: 1
+    ff_mult: 2
+  view_dropout: 0.0           # prob. of dropping each view token in training (0 = off)
+  scale_interaction:
+    enabled: false            # adjacent-duration residual messages; identity at initialization
+  # --- baseline_single only ---
+  single_view_index: 1        # 0..3 -> 0.5s, 1s, 2s, 4s
+
+augment:
+  enabled: false
+  max_time_shift_frac: 0.05   # random shift along the time axis
+  noise_std: 0.0
+
+train:
+  epochs: 30
+  batch_size: 64
+  lr: 0.001
+  weight_decay: 0.01
+  warmup_epochs: 1
+  grad_clip: 1.0
+  patience: 8                 # early stopping on source-val macro-F1 (null = off)
+  num_workers: 0              # 0 is safest on macOS/MPS
+  log_every: 50
+
+evaluate:
+  # Pre-registered thresholds for the final target evaluation. Report all, pick none.
+  target_confidence_thresholds: [null, 0.7, 0.9]
+  # null = use EVERY eligible target event (required for final evaluation). A cap is only
+  # accepted when experiment.debug is true (see the `debug:` block below); on a normal run a
+  # non-null value raises an error instead of silently subsampling the target run.
+  max_per_class_target: null
+
+# `--debug` applies these overrides (tiny, fast, CPU-friendly).
+debug:
+  sampling: {max_per_class_train: 30, max_per_class_val: 10}
+  data: {image_size: [64, 77]}   # aspect-preserving for the 573x479 crop (0.6% stretch)
+  model: {base_channels: 8, num_stages: 3, embed_dim: 32, film: {cond_dim: 16}}
+  train: {epochs: 2, batch_size: 16, patience: null}
+  evaluate: {max_per_class_target: 20}
