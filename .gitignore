@@ -36,3 +36,6 @@ requirements_backup.txt
 
 # Training outputs
 experiments/
+
+# Local dataset inspection outputs
+docs/image_inspection/H1_O2/*.csv
