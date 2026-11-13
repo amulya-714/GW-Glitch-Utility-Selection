@@ -187,8 +187,23 @@ def load_checkpoint(path: str | Path, device: torch.device) -> tuple[nn.Module, 
         if k not in ckpt:
             raise KeyError(f"Checkpoint {path} is missing '{k}'. Was it written by train.py?")
     cfg, mapping = ckpt["config"], ClassMapping.from_dict(ckpt["class_mapping"])
+    # The stored preprocessing signature must match the stored config, otherwise the model would be fed
+    # pixels it was not trained on. Old checkpoints without a signature are accepted unchanged.
+    stored = ckpt.get("preprocessing")
+    if stored and stored.get("hash"):
+        from src.data.preprocessing import preprocessing_signature
+        now = preprocessing_signature(cfg["data"])["hash"]
+        if now != stored["hash"]:
+            log.warning("Checkpoint %s: preprocessing hash stored at training time (%s) differs from the hash "
+                        "recomputed from its config now (%s). Either the preprocessing code changed since training "
+                        "or the checkpoint was edited. Verify the input pipeline before trusting these results.",
+                        path, stored["hash"], now)
     model = build_model(cfg, mapping.num_classes)
-    model.load_state_dict(ckpt["model_state"])
+    try:
+        model.load_state_dict(ckpt["model_state"])
+    except RuntimeError as exc:
+        raise RuntimeError(f"Checkpoint {path} does not match the architecture built from its own config "
+                           f"(model.type={cfg['model'].get('type')}): {exc}") from exc
     return model.to(device).eval(), cfg, mapping
 
 

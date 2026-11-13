@@ -126,7 +126,7 @@ loss:
     temperature: 1.0
 
 model:
-  type: multiview             # multiview | baseline_merged | baseline_single
+  type: multiview             # multiview | baseline_merged | baseline_single | single_view
   base_channels: 32
   num_stages: 4
   embed_dim: 128
@@ -144,7 +144,9 @@ model:
   view_dropout: 0.0           # prob. of dropping each view token in training (0 = off)
   scale_interaction:
     enabled: false            # adjacent-duration residual messages; identity at initialization
-  # --- baseline_single only ---
+  # --- baseline_single / single_view only ---
+  # baseline_single (legacy): model receives all 4 views and slices one internally.
+  # single_view: the dataset delivers ONLY this view, input (B,1,C,H,W). Use src.models.train_single_view.
   single_view_index: 1        # 0..3 -> 0.5s, 1s, 2s, 4s
 
 augment:

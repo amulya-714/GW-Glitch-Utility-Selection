@@ -8,7 +8,9 @@ from torch import nn
 from src.models.baseline_cnn import BaselineCNN
 from src.models.multiview_cnn import MultiViewNet, count_parameters
 
-__all__ = ["BaselineCNN", "MultiViewNet", "build_model", "count_parameters"]
+__all__ = ["BaselineCNN", "MultiViewNet", "MODEL_TYPES", "build_model", "count_parameters"]
+
+MODEL_TYPES = ("multiview", "baseline_merged", "baseline_single", "single_view")
 
 
 def build_model(cfg: dict[str, Any], num_classes: int) -> nn.Module:
@@ -31,4 +33,13 @@ def build_model(cfg: dict[str, Any], num_classes: int) -> nn.Module:
             num_classes, in_channels=d["channels"], num_views=n_views,
             mode="merged" if kind == "baseline_merged" else "single",
             single_view_index=m["single_view_index"], **common)
-    raise ValueError(f"model.type must be multiview|baseline_merged|baseline_single, got '{kind}'")
+    if kind == "single_view":
+        # True single-view baseline: the DATASET delivers only view model.single_view_index
+        # (see src.data.dataset.model_input_views), so the network is built for ONE input view.
+        # Same conv backbone, width schedule, embedding and head as baseline_single.
+        idx = m.get("single_view_index")
+        if idx is None or not 0 <= int(idx) < n_views:
+            raise ValueError(f"model.single_view_index={idx} out of range for {n_views} views.")
+        return BaselineCNN(num_classes, in_channels=d["channels"], num_views=1, mode="single",
+                           single_view_index=0, **common)
+    raise ValueError(f"model.type must be multiview|baseline_merged|baseline_single|single_view, got '{kind}'")

@@ -90,6 +90,10 @@ def validate_cfg(cfg: dict[str, Any]) -> None:
         cfg["model"]["type"] == "multiview" and cfg["model"].get("scale_interaction", {}).get("enabled", False)
     ):
         raise ValueError("scale consistency requires model.type=multiview and model.scale_interaction.enabled=true")
+    if cfg["model"]["type"] == "single_view":
+        idx = cfg["model"].get("single_view_index")
+        if idx is None or not 0 <= int(idx) < len(cfg["data"]["view_columns"]):
+            raise ValueError(f"model.single_view_index={idx} out of range for data.view_columns.")
     # Fail fast on bad crop / resolution / normalisation settings, before any download.
     PreprocessConfig.from_cfg(cfg["data"])
     Normalizer.from_cfg(cfg["data"])
@@ -362,7 +366,7 @@ def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--config", default=str(project_root() / "configs" / "classifier.yaml"))
     ap.add_argument("--ifo", choices=["H1", "L1"])
-    ap.add_argument("--model", choices=["multiview", "baseline_merged", "baseline_single"])
+    ap.add_argument("--model", choices=["multiview", "baseline_merged", "baseline_single", "single_view"])
     ap.add_argument("--seed", type=int)
     ap.add_argument("--device", choices=["auto", "cpu", "mps", "cuda"])
     ap.add_argument("--name", help="Run name (default: {ifo}_{model}_seed{seed})")

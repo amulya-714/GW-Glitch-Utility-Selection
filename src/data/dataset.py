@@ -246,13 +246,25 @@ class GlitchDataset(Dataset):
     """
 
     def __init__(self, array_path: str | Path, labels: np.ndarray | None, ids: Sequence[str],
-                 augment: Augment | None = None, normalizer: Normalizer | None = None):
+                 augment: Augment | None = None, normalizer: Normalizer | None = None,
+                 view_indices: Sequence[int] | None = None):
         self.array_path = str(array_path)
         self._x: np.ndarray | None = None
-        n = np.load(self.array_path, mmap_mode="r").shape[0]
+        shape = np.load(self.array_path, mmap_mode="r").shape
+        n = shape[0]
         if len(ids) != n or (labels is not None and len(labels) != n):
             raise ValueError(f"Array has {n} rows but got {len(ids)} ids and "
                              f"{None if labels is None else len(labels)} labels. Misaligned inputs.")
+        # view_indices=None returns every stored view (multi-view / merged models). A list selects views from
+        # the aligned (N, V, C, H, W) array, so a single-view model receives (1, C, H, W) per event while the
+        # event population (and the cached array) stays identical to the multi-view run.
+        if view_indices is not None:
+            view_indices = [int(v) for v in view_indices]
+            n_views = shape[1] if len(shape) > 1 else 0
+            if not view_indices or len(set(view_indices)) != len(view_indices) or \
+                    not all(0 <= v < n_views for v in view_indices):
+                raise ValueError(f"view_indices {view_indices} invalid for an array with {n_views} views.")
+        self.view_indices = view_indices
         self.labels = None if labels is None else np.asarray(labels, dtype=np.int64)
         self.ids = list(ids)
         self.augment = augment
@@ -267,7 +279,8 @@ class GlitchDataset(Dataset):
         return self._x
 
     def __getitem__(self, i: int):
-        x = self.normalizer(torch.from_numpy(np.array(self._array()[i])))
+        raw = self._array()[i] if self.view_indices is None else self._array()[i, self.view_indices]
+        x = self.normalizer(torch.from_numpy(np.array(raw)))
         if self.augment is not None:
             x = self.augment(x)
         y = -1 if self.labels is None else int(self.labels[i])
@@ -303,6 +316,22 @@ def make_loader(ds: Dataset, batch_size: int, shuffle: bool, sampler=None, num_w
     )
 
 
+def model_input_views(cfg: dict[str, Any]) -> list[int] | None:
+    """Which stored views the configured model receives. None = all of them.
+
+    model.type=single_view feeds exactly ONE view (model.single_view_index, 0..V-1 in data.view_columns order).
+    Every other model type (multiview, baseline_merged, legacy baseline_single) receives all views.
+    """
+    m = cfg.get("model", {})
+    if m.get("type") != "single_view":
+        return None
+    n_views = len(cfg["data"]["view_columns"])
+    idx = m.get("single_view_index")
+    if idx is None or not 0 <= int(idx) < n_views:
+        raise ValueError(f"model.single_view_index={idx} out of range for {n_views} views.")
+    return [int(idx)]
+
+
 def prepare_split(
     df: pd.DataFrame, name: str, cfg: dict[str, Any], store: ImageStore,
     *, augment: Augment | None = None, has_labels: bool = True,
@@ -326,5 +355,10 @@ def prepare_split(
             f"No usable events left in split '{name}'. Check network/URLs and the failures log; if the reasons "
             "mention image size, data.crop.reference_size does not match the downloaded PNGs.")
     labels = kept["label"].to_numpy() if has_labels else None
-    ds = GlitchDataset(path, labels, kept["gravityspy_id"].tolist(), augment, Normalizer.from_cfg(d))
+    view_indices = model_input_views(cfg)
+    if view_indices is not None:
+        log.info("%s: model input restricted to view(s) %s (%s)", name, view_indices,
+                 [d["view_columns"][v] for v in view_indices])
+    ds = GlitchDataset(path, labels, kept["gravityspy_id"].tolist(), augment, Normalizer.from_cfg(d),
+                       view_indices=view_indices)
     return ds, kept, failures

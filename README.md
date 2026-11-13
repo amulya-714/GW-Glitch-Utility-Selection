@@ -64,6 +64,20 @@ Outputs go to `experiments/runs/<name>/`: `config.yaml`, `class_mapping.json`, `
 before/after filtering, purged and excluded events), `history.csv`, `training_curves.png`, `checkpoints/{best,last}.pt`,
 `eval_val_best/` (metrics.json, per_class.csv, confusion_matrix.csv/png), `image_failures.csv`, `summary.json`, `train.log`.
 
+## Single-view baselines and model comparison
+
+One CNN per Omega-scan duration (each receives ONLY its view), trained with the exact protocol of a reference
+multi-view run, then compared on the same O2 validation events with metrics, calibration and selective-prediction
+plots. Full guide: [`docs/SINGLE_VIEW_BASELINES_AND_EVALUATION.md`](docs/SINGLE_VIEW_BASELINES_AND_EVALUATION.md).
+
+```bash
+python -m src.models.train_single_view --ifo H1 --view all --device cuda \
+  --reference-run experiments/runs/H1_O2_colab_baseline_v4 --skip-existing
+python -m src.evaluation.compare_models --multiview-run experiments/runs/H1_O2_colab_baseline_v4 \
+  --runs-root experiments/runs --out experiments/comparisons/H1_O2_single_vs_multiview \
+  --o3a-diagnostic-run experiments/runs/H1_O2_colab_baseline_v4_sample_diagnostic
+```
+
 ## Optional hierarchical scale interaction
 
 The default remains the shared CNN + time-scale FiLM + attention baseline. An opt-in first experiment adds
