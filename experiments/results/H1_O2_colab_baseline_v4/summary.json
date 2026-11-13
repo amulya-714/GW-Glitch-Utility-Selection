@@ -1,0 +1,68 @@
+{
+  "run": "H1_O2_colab_baseline_v4",
+  "device": "cuda",
+  "best_epoch": 26,
+  "epochs_run": 30,
+  "train_seconds": 7053.344178915024,
+  "parameters": 1469878,
+  "n_train": 18233,
+  "n_val": 8785,
+  "preprocessing": {
+    "geometry": {
+      "size": [
+        128,
+        153
+      ],
+      "channels": 3,
+      "resize": "bilinear",
+      "alpha": "white",
+      "crop": [
+        101,
+        61,
+        674,
+        540
+      ],
+      "crop_ref": [
+        800,
+        600
+      ]
+    },
+    "views": [
+      "url1",
+      "url2",
+      "url3",
+      "url4"
+    ],
+    "view_durations": [
+      0.5,
+      1.0,
+      2.0,
+      4.0
+    ],
+    "normalization": {
+      "mode": "unit",
+      "mean": null,
+      "std": null
+    },
+    "hash": "dbdbffab0c2b"
+  },
+  "input_shape_per_event": [
+    4,
+    3,
+    128,
+    153
+  ],
+  "val_metrics": {
+    "n": 8785,
+    "accuracy": 0.8923164484917473,
+    "balanced_accuracy_present": 0.6674490897497964,
+    "macro_f1_present": 0.6879036327275221,
+    "macro_precision_present": 0.7510257781751231,
+    "macro_recall_present": 0.6674490897497964,
+    "macro_f1_all_classes": 0.6879036327275221,
+    "weighted_f1": 0.8898473858254741,
+    "num_classes_present": 21,
+    "ece": 0.07006638075183186,
+    "loss": 0.45245260095810036
+  }
+}

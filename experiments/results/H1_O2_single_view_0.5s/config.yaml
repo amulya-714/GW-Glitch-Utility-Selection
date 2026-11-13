@@ -1,0 +1,175 @@
+experiment:
+  name: H1_O2_single_view_0.5s
+  seed: 42
+  output_dir: experiments/runs
+  device: cuda
+  debug: false
+protocol:
+  source_run: O2
+  target_runs:
+  - O3a
+paths:
+  metadata_dir: data/raw/metadata
+  image_dir: data/raw/images
+  processed_dir: data/processed
+data:
+  ifo: H1
+  view_columns:
+  - url1
+  - url2
+  - url3
+  - url4
+  view_durations:
+  - 0.5
+  - 1.0
+  - 2.0
+  - 4.0
+  image_size:
+  - 128
+  - 153
+  channels: 3
+  resize_mode: bilinear
+  alpha_background: white
+  crop:
+    enabled: true
+    reference_size:
+    - 800
+    - 600
+    box:
+    - 101
+    - 61
+    - 674
+    - 540
+    max_aspect_distortion: 0.02
+  normalization:
+    mode: unit
+    mean: null
+    std: null
+  download:
+    workers: 8
+    timeout_s: 30
+    retries: 4
+    backoff_s: 1.5
+    min_bytes: 200
+classes:
+  names:
+  - 1080Lines
+  - 1400Ripples
+  - Air_Compressor
+  - Blip
+  - Chirp
+  - Extremely_Loud
+  - Helix
+  - Koi_Fish
+  - Light_Modulation
+  - Low_Frequency_Burst
+  - Low_Frequency_Lines
+  - No_Glitch
+  - None_of_the_Above
+  - Paired_Doves
+  - Power_Line
+  - Repeating_Blips
+  - Scattered_Light
+  - Scratchy
+  - Tomte
+  - Violin_Mode
+  - Wandering_Line
+  - Whistle
+  exclude:
+  - None_of_the_Above
+  unseen_in_source:
+  - Blip_Low_Frequency
+  - Fast_Scattering
+confidence:
+  train: 0.7
+  val: 0.7
+split:
+  mode: chronological
+  val_fraction: 0.2
+  gap_seconds: 21600
+  block_seconds: 86400
+  min_val_per_class: 20
+sampling:
+  max_per_class_train: 3000
+  max_per_class_val: 1500
+imbalance:
+  weighting: effective_number
+  weight_power: 1.0
+  effective_number_beta: 0.999
+  max_weight: 20.0
+  sampler: none
+loss:
+  name: ce
+  label_smoothing: 0.0
+  focal_gamma: 2.0
+  scale_consistency:
+    weight: 0.0
+    confidence_threshold: 0.7
+    temperature: 1.0
+model:
+  type: single_view
+  base_channels: 32
+  num_stages: 4
+  embed_dim: 128
+  dropout: 0.3
+  film:
+    enabled: true
+    cond_dim: 64
+    mode: continuous
+  fusion:
+    type: attention
+    num_heads: 4
+    num_layers: 1
+    ff_mult: 2
+  view_dropout: 0.0
+  scale_interaction:
+    enabled: false
+  single_view_index: 0
+augment:
+  enabled: false
+  max_time_shift_frac: 0.05
+  noise_std: 0.0
+train:
+  epochs: 30
+  batch_size: 32
+  lr: 0.001
+  weight_decay: 0.01
+  warmup_epochs: 1
+  grad_clip: 1.0
+  patience: 8
+  num_workers: 2
+  log_every: 50
+evaluate:
+  target_confidence_thresholds:
+  - null
+  - 0.7
+  - 0.9
+  max_per_class_target: null
+debug:
+  sampling:
+    max_per_class_train: 30
+    max_per_class_val: 10
+  data:
+    image_size:
+    - 64
+    - 77
+  model:
+    base_channels: 8
+    num_stages: 3
+    embed_dim: 32
+    film:
+      cond_dim: 16
+  train:
+    epochs: 2
+    batch_size: 16
+    patience: null
+  evaluate:
+    max_per_class_target: 20
+provenance:
+  experiment_kind: single_view_baseline
+  input_view_index: 0
+  input_view_column: url1
+  input_view_seconds: 0.5
+  base_config: /content/GW-Glitch-Utility-Selection/experiments/runs/H1_O2_colab_baseline_v4/config.yaml
+  base_config_sha256: 7acc189931a13228
+  reference_run: /content/GW-Glitch-Utility-Selection/experiments/runs/H1_O2_colab_baseline_v4

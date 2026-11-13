@@ -1,0 +1,55 @@
+{
+  "class_to_idx": {
+    "1080Lines": 0,
+    "1400Ripples": 1,
+    "Air_Compressor": 2,
+    "Blip": 3,
+    "Chirp": 4,
+    "Extremely_Loud": 5,
+    "Helix": 6,
+    "Koi_Fish": 7,
+    "Light_Modulation": 8,
+    "Low_Frequency_Burst": 9,
+    "Low_Frequency_Lines": 10,
+    "No_Glitch": 11,
+    "Paired_Doves": 12,
+    "Power_Line": 13,
+    "Repeating_Blips": 14,
+    "Scattered_Light": 15,
+    "Scratchy": 16,
+    "Tomte": 17,
+    "Violin_Mode": 18,
+    "Wandering_Line": 19,
+    "Whistle": 20
+  },
+  "trained_classes": [
+    "1080Lines",
+    "1400Ripples",
+    "Air_Compressor",
+    "Blip",
+    "Chirp",
+    "Extremely_Loud",
+    "Helix",
+    "Koi_Fish",
+    "Light_Modulation",
+    "Low_Frequency_Burst",
+    "Low_Frequency_Lines",
+    "No_Glitch",
+    "Paired_Doves",
+    "Power_Line",
+    "Repeating_Blips",
+    "Scattered_Light",
+    "Scratchy",
+    "Tomte",
+    "Violin_Mode",
+    "Wandering_Line",
+    "Whistle"
+  ],
+  "excluded_from_training": [
+    "None_of_the_Above"
+  ],
+  "unseen_in_source_run": [
+    "Blip_Low_Frequency",
+    "Fast_Scattering"
+  ]
+}

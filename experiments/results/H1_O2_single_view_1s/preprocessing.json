@@ -1,0 +1,39 @@
+{
+  "geometry": {
+    "size": [
+      128,
+      153
+    ],
+    "channels": 3,
+    "resize": "bilinear",
+    "alpha": "white",
+    "crop": [
+      101,
+      61,
+      674,
+      540
+    ],
+    "crop_ref": [
+      800,
+      600
+    ]
+  },
+  "views": [
+    "url1",
+    "url2",
+    "url3",
+    "url4"
+  ],
+  "view_durations": [
+    0.5,
+    1.0,
+    2.0,
+    4.0
+  ],
+  "normalization": {
+    "mode": "unit",
+    "mean": null,
+    "std": null
+  },
+  "hash": "dbdbffab0c2b"
+}

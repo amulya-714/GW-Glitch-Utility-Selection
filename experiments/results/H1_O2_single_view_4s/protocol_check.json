@@ -1,0 +1,42 @@
+{
+  "run": "H1_O2_single_view_4s",
+  "provenance": {
+    "experiment_kind": "single_view_baseline",
+    "input_view_index": 3,
+    "input_view_column": "url4",
+    "input_view_seconds": 4.0,
+    "base_config": "/content/GW-Glitch-Utility-Selection/experiments/runs/H1_O2_colab_baseline_v4/config.yaml",
+    "base_config_sha256": "7acc189931a13228",
+    "reference_run": "/content/GW-Glitch-Utility-Selection/experiments/runs/H1_O2_colab_baseline_v4"
+  },
+  "reference_run": "/content/GW-Glitch-Utility-Selection/experiments/runs/H1_O2_colab_baseline_v4",
+  "verified_against_reference": true,
+  "differences": {
+    "n_differences": 3,
+    "unexpected": [],
+    "protocol_critical": [],
+    "all": [
+      {
+        "key": "experiment.name",
+        "single_view": "H1_O2_single_view_4s",
+        "reference": "H1_O2_colab_baseline_v4",
+        "expected": true,
+        "protocol_critical": false
+      },
+      {
+        "key": "model.single_view_index",
+        "single_view": 3,
+        "reference": 1,
+        "expected": true,
+        "protocol_critical": false
+      },
+      {
+        "key": "model.type",
+        "single_view": "single_view",
+        "reference": "multiview",
+        "expected": true,
+        "protocol_critical": false
+      }
+    ]
+  }
+}
